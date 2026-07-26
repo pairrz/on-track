@@ -1,45 +1,53 @@
+
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { signOut } from "next-auth/react";
 import { SummaryCards } from "@/components/dashboard/SummaryCards";
 import { TaskTable } from "@/components/dashboard/TaskTable";
 import { TaskCalendar } from "@/components/dashboard/TaskCalendar";
 import { TaskDialog } from "@/components/dashboard/TaskDialog";
-import {
-  tasks as initialTasks,
-  getTaskSummary,
-  type Task,
-  type TaskStatus,
-} from "@/components/dashboard/tasks-data";
+import { getTaskSummary, type Task, type TaskStatus } from "@/components/dashboard/tasks-data";
 import { Button } from "@/components/ui/button";
 import { Plus, Search, LogOut } from "lucide-react";
 import { Input } from "@/components/ui/input";
 
 export function DashboardClient() {
-  const [tasks, setTasks] = useState<Task[]>(initialTasks);
+  const [tasks, setTasks] = useState<Task[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [query, setQuery] = useState("");
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editing, setEditing] = useState<Task | null>(null);
 
+  useEffect(() => {
+    async function loadTasks() {
+      try {
+        const res = await fetch("/api/dashboard");
+        if (!res.ok) throw new Error("Failed to fetch tasks");
+        const data = await res.json();
+        setTasks(data.tasks);
+      } catch (err) {
+        setError(err instanceof Error ? err.message : "An error occurred");
+      } finally {
+        setLoading(false);
+      }
+    }
+    loadTasks();
+  }, []);
+
   const filtered = useMemo(
     () =>
       query.trim()
-        ? tasks.filter((t) => t.name.toLowerCase().includes(query.toLowerCase()))
+        ? tasks.filter((t) => t.title.toLowerCase().includes(query.toLowerCase()))
         : tasks,
     [tasks, query],
   );
 
   const summary = getTaskSummary(tasks);
 
-  const handleStatusChange = (id: string, status: TaskStatus) => {
-    setTasks((prev) =>
-      prev.map((t) =>
-        t.id === id
-          ? { ...t, status, progress: status === "Completed" ? 100 : t.progress }
-          : t,
-      ),
-    );
+  const handleStatusChange = (id: number, status: TaskStatus) => {
+    setTasks((prev) => prev.map((t) => (t.id === id ? { ...t, status } : t)));
   };
 
   const handleSave = (task: Task) => {
@@ -49,7 +57,7 @@ export function DashboardClient() {
     });
   };
 
-  const handleDelete = (id: string) => {
+  const handleDelete = (id: number) => {
     setTasks((prev) => prev.filter((t) => t.id !== id));
   };
 
@@ -63,12 +71,15 @@ export function DashboardClient() {
     setDialogOpen(true);
   };
 
+  if (loading) return <div className="p-8">กำลังโหลด...</div>;
+  if (error) return <div className="p-8 text-red-500">{error}</div>;
+
   return (
     <div className="min-h-screen bg-muted/30">
       <header className="border-b bg-background">
         <div className="mx-auto max-w-7xl px-6 py-6 flex flex-wrap items-center justify-between gap-4">
           <div>
-            <h1 className="text-2xl font-bold tracking-tight">Task Dashboard</h1>
+            <h1 className="text-2xl font-bold tracking-tight">On-Track</h1>
             <p className="text-sm text-muted-foreground mt-1">
               Track your tasks, status, and schedule in one place.
             </p>
