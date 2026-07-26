@@ -1,88 +1,65 @@
 "use client";
 
-import { useState } from "react";
-import { useRouter } from "next/navigation";
-import { signIn } from "next-auth/react";
+import RegisterForm from "@/components/register/RegisterForm";
+import ProductVisual from "@/components/login/ProductVisual";
 
 export default function RegisterPage() {
-  const router = useRouter();
-  const [form, setForm] = useState({ name: "", email: "", password: "" });
-  const [error, setError] = useState("");
-  const [loading, setLoading] = useState(false);
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setLoading(true);
-    setError("");
-
-    const res = await fetch("/api/register", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(form),
-    });
-
-    const data = await res.json();
-
-    if (!res.ok) {
-      setError(data.error || "เกิดข้อผิดพลาด");
-      setLoading(false);
-      return;
-    }
-
-    // สมัครสำเร็จ -> auto login ให้เลย
-    const loginRes = await signIn("credentials", {
-      email: form.email,
-      password: form.password,
-      redirect: false,
-    });
-
-    setLoading(false);
-
-    if (loginRes?.ok) {
-      router.push("/dashboard");
-    } else {
-      router.push("/login");
-    }
-  };
-
   return (
-    <div className="max-w-sm mx-auto mt-20 p-6 border rounded">
-      <h1 className="text-xl font-bold mb-4">สมัครสมาชิก</h1>
-      <form onSubmit={handleSubmit} className="space-y-3">
-        <input
-          type="text"
-          placeholder="ชื่อ"
-          value={form.name}
-          onChange={(e) => setForm({ ...form, name: e.target.value })}
-          className="w-full border p-2 rounded"
-          required
-        />
-        <input
-          type="email"
-          placeholder="อีเมล"
-          value={form.email}
-          onChange={(e) => setForm({ ...form, email: e.target.value })}
-          className="w-full border p-2 rounded"
-          required
-        />
-        <input
-          type="password"
-          placeholder="รหัสผ่าน (อย่างน้อย 8 ตัว)"
-          value={form.password}
-          onChange={(e) => setForm({ ...form, password: e.target.value })}
-          className="w-full border p-2 rounded"
-          required
-          minLength={8}
-        />
-        {error && <p className="text-red-500 text-sm">{error}</p>}
-        <button
-          type="submit"
-          disabled={loading}
-          className="w-full bg-blue-600 text-white p-2 rounded disabled:opacity-50"
-        >
-          {loading ? "กำลังสมัคร..." : "สมัครสมาชิก"}
-        </button>
-      </form>
+    <div className="min-h-screen flex flex-col lg:flex-row overflow-hidden">
+      {/* Left: Product visual */}
+      <div className="hidden lg:flex lg:w-1/2 xl:w-1/2 flex-shrink-0">
+        <ProductVisual />
+      </div>
+
+      {/* Right: Register form */}
+      <div className="flex-1 flex items-center justify-center bg-white px-6 py-12 lg:px-12 min-h-screen lg:min-h-0">
+        {/* Mobile brand */}
+        <div className="absolute top-6 left-6 flex items-center gap-2 lg:hidden">
+          <OnTrackMark size={28} />
+
+          <span
+            className="text-lg font-bold tracking-tight"
+            style={{
+              fontFamily: "'Plus Jakarta Sans', sans-serif",
+              color: "#4338ca",
+            }}
+          >
+            OnTrack
+          </span>
+        </div>
+
+        <RegisterForm />
+      </div>
     </div>
+  );
+}
+
+function OnTrackMark({ size = 32 }: { size?: number }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 32 32" fill="none">
+      <rect width="32" height="32" rx="8" fill="url(#markGrad)" />
+
+      <path
+        d="M8 16.5L13.5 22L24 11"
+        stroke="white"
+        strokeWidth="2.5"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+
+      <defs>
+        <linearGradient
+          id="markGrad"
+          x1="0"
+          y1="0"
+          x2="32"
+          y2="32"
+          gradientUnits="userSpaceOnUse"
+        >
+          <stop stopColor="#6366f1" />
+          <stop offset="1" stopColor="#4338ca" />
+        </linearGradient>
+      </defs>
+    </svg>
   );
 }

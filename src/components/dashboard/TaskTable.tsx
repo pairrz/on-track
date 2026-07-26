@@ -1,6 +1,5 @@
 "use client";
 
-import { useState } from "react";
 import { Badge } from "@/components/ui/badge";
 import {
   Table,
@@ -17,9 +16,8 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
-import { Checkbox } from "@/components/ui/checkbox";
 import { cn } from "@/lib/utils";
-import { ChevronDown, Trash2, Check } from "lucide-react";
+import { ChevronDown, Trash2 } from "lucide-react";
 import {
   statusLabels,
   type Task,
@@ -71,46 +69,6 @@ export function TaskTable({
   onEdit,
   onDelete,
 }: Props) {
-  const [checked, setChecked] = useState<Record<number, boolean>>({});
-
-  const allChecked =
-    tasks.length > 0 && tasks.every((t) => checked[t.id]);
-
-  const toggleAll = (value: boolean) => {
-    const next: Record<number, boolean> = {};
-
-    if (value) {
-      tasks.forEach((t) => {
-        next[t.id] = true;
-      });
-    }
-
-    setChecked(next);
-  };
-
-  const selectedIds = tasks
-    .filter((t) => checked[t.id])
-    .map((t) => t.id);
-
-  const selectedCount = selectedIds.length;
-
-  const bulkComplete = () => {
-    selectedIds.forEach((id) => {
-      const task = tasks.find((t) => t.id === id);
-
-      if (task && task.status !== "DONE") {
-        onStatusChange(id, "DONE");
-      }
-    });
-
-    setChecked({});
-  };
-
-  const bulkDelete = () => {
-    selectedIds.forEach((id) => onDelete(id));
-    setChecked({});
-  };
-
   return (
     <div className="rounded-xl border bg-card shadow-sm">
       <div className="flex items-center justify-between gap-3 px-6 py-4 border-b flex-wrap">
@@ -121,49 +79,12 @@ export function TaskTable({
             Manage and track all your active tasks
           </p>
         </div>
-
-        {selectedCount > 0 && (
-          <div className="flex items-center gap-2">
-            <span className="text-sm text-muted-foreground">
-              {selectedCount} selected
-            </span>
-
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={bulkComplete}
-            >
-              <Check className="h-4 w-4 mr-1" />
-              Complete
-            </Button>
-
-            <Button
-              variant="outline"
-              size="sm"
-              className="text-red-600 hover:text-red-700"
-              onClick={bulkDelete}
-            >
-              <Trash2 className="h-4 w-4 mr-1" />
-              Delete
-            </Button>
-          </div>
-        )}
       </div>
 
       <div className="overflow-x-auto">
         <Table>
           <TableHeader>
             <TableRow className="bg-muted/40 hover:bg-muted/40">
-              <TableHead className="w-12">
-                <Checkbox
-                  checked={allChecked}
-                  onCheckedChange={(value) =>
-                    toggleAll(Boolean(value))
-                  }
-                  aria-label="Select all tasks"
-                />
-              </TableHead>
-
               <TableHead className="min-w-[240px]">
                 Task Name
               </TableHead>
@@ -184,26 +105,7 @@ export function TaskTable({
                 key={task.id}
                 className="hover:bg-muted/30 transition-colors"
               >
-                <TableCell>
-                  <Checkbox
-                    checked={!!checked[task.id]}
-                    onCheckedChange={(value) =>
-                      setChecked((prev) => ({
-                        ...prev,
-                        [task.id]: Boolean(value),
-                      }))
-                    }
-                    aria-label={`Select ${task.title}`}
-                  />
-                </TableCell>
-
-                <TableCell
-                  className={cn(
-                    "font-medium",
-                    checked[task.id] &&
-                      "line-through text-muted-foreground",
-                  )}
-                >
+                <TableCell className="font-medium">
                   <button
                     type="button"
                     onClick={() => onEdit(task)}
@@ -276,7 +178,7 @@ export function TaskTable({
             {tasks.length === 0 && (
               <TableRow>
                 <TableCell
-                  colSpan={5}
+                  colSpan={4}
                   className="text-center text-sm text-muted-foreground py-10"
                 >
                   No tasks match your search.
