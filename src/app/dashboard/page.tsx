@@ -1,22 +1,21 @@
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/auth";
-import { redirect } from "next/navigation";
-import LogoutButton from "@/components/logout-button";
+import type { Metadata } from "next";
+import { DashboardClient } from "./DashboardClient";
 
-export default async function DashboardPage() {
-  const session = await getServerSession(authOptions);
+export const metadata: Metadata = {
+  title: "Task Dashboard – Track work, status & schedule",
+  description:
+    "A modern task management dashboard to track tasks, monitor status and progress, and view scheduled work on a monthly calendar.",
+  openGraph: {
+    title: "Task Dashboard – Track work, status & schedule",
+    description:
+      "Monitor tasks, priorities, progress, and due dates in a clean task management dashboard.",
+    type: "website",
+  },
+  twitter: {
+    card: "summary_large_image",
+  },
+};
 
-  if (!session?.user) {
-    redirect("/login");
-  }
-
-  return (
-    <div className="p-8">
-      <h1 className="text-2xl font-bold">Dashboard</h1>
-      <p>ยินดีต้อนรับ, {session.user.name}</p>
-      <p>Email: {session.user.email}</p>
-      <p>User ID: {session.user.id}</p>
-      <LogoutButton />
-    </div>
-  );
+export default function DashboardPage() {
+  return <DashboardClient />;
 }
