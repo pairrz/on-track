@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import { signOut } from "next-auth/react";
 import { SummaryCards } from "@/components/dashboard/SummaryCards";
 import { TaskTable } from "@/components/dashboard/TaskTable";
 import { TaskCalendar } from "@/components/dashboard/TaskCalendar";
@@ -12,7 +13,7 @@ import {
   type TaskStatus,
 } from "@/components/dashboard/tasks-data";
 import { Button } from "@/components/ui/button";
-import { Plus, Search } from "lucide-react";
+import { Plus, Search, LogOut } from "lucide-react";
 import { Input } from "@/components/ui/input";
 
 export function DashboardClient() {
@@ -85,6 +86,13 @@ export function DashboardClient() {
             <Button onClick={openNew}>
               <Plus className="h-4 w-4 mr-1" />
               New Task
+            </Button>
+            <Button
+              variant="outline"
+              onClick={() => signOut({ callbackUrl: "/login" })}
+            >
+              <LogOut className="h-4 w-4 mr-1" />
+              Logout
             </Button>
           </div>
         </div>

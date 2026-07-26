@@ -1,7 +1,6 @@
 "use client";
-import { useState } from "react";
+
 import { Badge } from "@/components/ui/badge";
-import { Checkbox } from "@/components/ui/checkbox";
 import {
   Table,
   TableBody,
@@ -18,7 +17,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import { Check, ChevronDown, Trash2 } from "lucide-react";
+import { ChevronDown, Trash2 } from "lucide-react";
 import type { Task, TaskStatus } from "./tasks-data";
 
 const statusStyles: Record<TaskStatus, string> = {
@@ -46,104 +45,33 @@ interface Props {
 }
 
 export function TaskTable({ tasks, onStatusChange, onEdit, onDelete }: Props) {
-  const [checked, setChecked] = useState<Record<string, boolean>>({});
-  const allChecked = tasks.length > 0 && tasks.every((t) => checked[t.id]);
-  
-
-  const toggleAll = (value: boolean) => {
-    const next: Record<string, boolean> = {};
-    if (value) tasks.forEach((t) => (next[t.id] = true));
-    setChecked(next);
-  };
-
-  const selectedIds = tasks.filter((t) => checked[t.id]).map((t) => t.id);
-  const selectedCount = selectedIds.length;
-
-  const bulkComplete = () => {
-    selectedIds.forEach((id) => {
-      const task = tasks.find((t) => t.id === id);
-      if (task && task.status !== "Completed") onStatusChange(id, "Completed");
-    });
-    setChecked({});
-  };
-
-  const bulkDelete = () => {
-    selectedIds.forEach((id) => onDelete(id));
-    setChecked({});
-  };
-
   return (
     <div className="rounded-xl border bg-card shadow-sm">
       <div className="flex items-center justify-between gap-3 px-6 py-4 border-b flex-wrap">
         <div>
           <h2 className="text-lg font-semibold">Tasks</h2>
           <p className="text-sm text-muted-foreground">
-            {selectedCount > 0
-              ? `${selectedCount} selected`
-              : "Manage and track all your active tasks"}
+            Manage and track all your active tasks
           </p>
-        </div>
-        <div className="flex items-center gap-2">
-          <Button
-            variant="outline"
-            size="sm"
-            className="h-8 gap-1 text-emerald-600 hover:text-emerald-700 hover:bg-emerald-500/10"
-            onClick={bulkComplete}
-            disabled={selectedCount === 0}
-          >
-            <Check className="h-4 w-4" />
-            Complete
-          </Button>
-          <Button
-            variant="outline"
-            size="sm"
-            className="h-8 gap-1 text-red-600 hover:text-red-700 hover:bg-red-500/10"
-            onClick={bulkDelete}
-            disabled={selectedCount === 0}
-          >
-            <Trash2 className="h-4 w-4" />
-            Delete
-          </Button>
         </div>
       </div>
       <div className="overflow-x-auto">
         <Table>
           <TableHeader>
             <TableRow className="bg-muted/40 hover:bg-muted/40">
-              <TableHead className="w-12">
-                <Checkbox
-                  checked={allChecked}
-                  onCheckedChange={(v) => toggleAll(Boolean(v))}
-                  aria-label="Select all tasks"
-                />
-              </TableHead>
               <TableHead className="min-w-[240px]">Task Name</TableHead>
               <TableHead>Status</TableHead>
               <TableHead>Due Date</TableHead>
+              <TableHead className="w-12 text-right">Delete</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {tasks.map((task) => (
               <TableRow
                 key={task.id}
-                data-state={checked[task.id] ? "selected" : undefined}
                 className="hover:bg-muted/30 transition-colors"
               >
-                <TableCell>
-                  <Checkbox
-                    checked={!!checked[task.id]}
-                    onCheckedChange={(v) =>
-                      setChecked((prev) => ({ ...prev, [task.id]: Boolean(v) }))
-                    }
-                    aria-label={`Select ${task.name}`}
-                  />
-                </TableCell>
-                <TableCell
-                  className={cn(
-                    "font-medium",
-                    checked[task.id] && "line-through text-muted-foreground",
-                  )}
-                >
+                <TableCell className="font-medium">
                   <button
                     type="button"
                     onClick={() => onEdit(task)}
@@ -184,6 +112,17 @@ export function TaskTable({ tasks, onStatusChange, onEdit, onDelete }: Props) {
                 </TableCell>
                 <TableCell className="text-muted-foreground text-sm">
                   {formatDate(task.dueDate)}
+                </TableCell>
+                <TableCell className="text-right">
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="h-8 w-8 text-muted-foreground hover:text-red-600 hover:bg-red-500/10"
+                    onClick={() => onDelete(task.id)}
+                    aria-label={`Delete ${task.name}`}
+                  >
+                    <Trash2 className="h-4 w-4" />
+                  </Button>
                 </TableCell>
               </TableRow>
             ))}
