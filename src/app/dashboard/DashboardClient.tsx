@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
@@ -46,20 +45,66 @@ export function DashboardClient() {
 
   const summary = getTaskSummary(tasks);
 
-  const handleStatusChange = (id: number, status: TaskStatus) => {
-    setTasks((prev) => prev.map((t) => (t.id === id ? { ...t, status } : t)));
-  };
+  const handleStatusChange = async (id: number, status: TaskStatus) => {
+  const prevTasks = tasks;
 
-  const handleSave = (task: Task) => {
-    setTasks((prev) => {
-      const exists = prev.some((t) => t.id === task.id);
-      return exists ? prev.map((t) => (t.id === task.id ? task : t)) : [task, ...prev];
+  setTasks((prev) => prev.map((t) => (t.id === id ? { ...t, status } : t)));
+
+  try {
+    const res = await fetch("/api/task", {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ id, status }),
     });
-  };
 
-  const handleDelete = (id: number) => {
-    setTasks((prev) => prev.filter((t) => t.id !== id));
-  };
+    if (!res.ok) throw new Error("Failed to update status");
+  } catch (err) {
+    setTasks(prevTasks);
+  }
+};
+
+  const handleSave = async (task: Task) => {
+  const isNew = !tasks.some((t) => t.id === task.id);
+
+  try {
+    const res = await fetch("/api/task", {
+      method: isNew ? "POST" : "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(task),
+    });
+
+    if (!res.ok) throw new Error("Failed to save task");
+
+    const saved = await res.json();
+
+    setTasks((prev) => {
+      const exists = prev.some((t) => t.id === saved.id);
+      return exists
+        ? prev.map((t) => (t.id === saved.id ? saved : t))
+        : [saved, ...prev];
+    });
+  } catch (err) {
+    console.error(err);
+  }
+};
+
+  const handleDelete = async (id: number) => {
+  const prevTasks = tasks;
+
+  setTasks((prev) => prev.filter((t) => t.id !== id));
+
+  try {
+    const res = await fetch(`/api/task`, {
+      method: "DELETE",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ id }),
+    });
+
+    if (!res.ok) throw new Error("Failed to delete task");
+  } catch (err) {
+    setTasks(prevTasks);
+  }
+};
 
   const openNew = () => {
     setEditing(null);
@@ -71,7 +116,7 @@ export function DashboardClient() {
     setDialogOpen(true);
   };
 
-  if (loading) return <div className="p-8">กำลังโหลด...</div>;
+  if (loading) return <div className="p-8">Loading...</div>;
   if (error) return <div className="p-8 text-red-500">{error}</div>;
 
   return (

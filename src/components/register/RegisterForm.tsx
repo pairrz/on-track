@@ -42,7 +42,6 @@ export default function RegisterForm() {
         return;
       }
 
-      // Auto login หลังจากสมัครสำเร็จ
       const loginRes = await signIn("credentials", {
         email,
         password,

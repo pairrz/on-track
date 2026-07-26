@@ -53,7 +53,7 @@ export async function POST(request: Request) {
   return NextResponse.json(newTask, { status: 201 });
 }
 
-export async function PUT(request: Request) {
+export async function PATCH(request: Request) {
   const session = await getServerSession(authOptions);
 
   if (!session?.user) {
@@ -61,7 +61,8 @@ export async function PUT(request: Request) {
   }
 
   const userId = Number(session.user.id);
-  const { id, title, description, categoryId, status, startAt, endAt, isAllDay } = await request.json();
+  const body = await request.json();
+  const { id, ...updates } = body;
 
   if (!id) {
     return NextResponse.json({ error: "Please specify an ID" }, { status: 400 });
@@ -70,20 +71,41 @@ export async function PUT(request: Request) {
   const existing = await prisma.task.findFirst({ where: { id, userId } });
 
   if (!existing) {
-    return NextResponse.json({ error: "Task not found or you don't have permission to edit it" }, { status: 404 });
+    return NextResponse.json(
+      { error: "Task not found or you don't have permission to edit it" },
+      { status: 404 },
+    );
+  }
+
+  const allowedFields = [
+    "title",
+    "description",
+    "categoryId",
+    "status",
+    "startAt",
+    "endAt",
+    "isAllDay",
+  ] as const;
+
+  const data: Record<string, unknown> = {};
+
+  for (const field of allowedFields) {
+    if (!(field in updates)) continue;
+
+    if (field === "startAt" || field === "endAt") {
+      data[field] = updates[field] ? new Date(updates[field]) : null;
+    } else {
+      data[field] = updates[field];
+    }
+  }
+
+  if (Object.keys(data).length === 0) {
+    return NextResponse.json({ error: "No fields to update" }, { status: 400 });
   }
 
   const updatedTask = await prisma.task.update({
     where: { id },
-    data: {
-      title,
-      description,
-      categoryId,
-      status,
-      startAt: startAt ? new Date(startAt) : null,
-      endAt: endAt ? new Date(endAt) : null,
-      isAllDay,
-    },
+    data,
     include: { category: true },
   });
 

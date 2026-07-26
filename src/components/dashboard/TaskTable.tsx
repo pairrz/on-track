@@ -68,7 +68,7 @@ export function TaskTable({
   onStatusChange,
   onEdit,
   onDelete,
-}: Props) {
+}: Props){
   return (
     <div className="rounded-xl border bg-card shadow-sm">
       <div className="flex items-center justify-between gap-3 px-6 py-4 border-b flex-wrap">
