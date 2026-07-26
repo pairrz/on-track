@@ -1,3 +1,5 @@
+"use client";
+
 import { CheckCircle2, Clock, ListTodo, AlertTriangle } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -9,6 +11,8 @@ interface SummaryCardsProps {
 }
 
 export function SummaryCards({ total, completed, inProgress, overdue }: SummaryCardsProps) {
+  const completionRate = total > 0 ? Math.round((completed / total) * 100) : 0;
+
   const cards = [
     {
       label: "Total Tasks",
@@ -16,13 +20,15 @@ export function SummaryCards({ total, completed, inProgress, overdue }: SummaryC
       icon: ListTodo,
       accent: "bg-primary/10 text-primary",
       trend: "All active tasks",
+      background: "bg-primary/5",
     },
     {
       label: "Completed",
       value: completed,
       icon: CheckCircle2,
       accent: "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400",
-      trend: `${Math.round((completed / total) * 100)}% completion rate`,
+      trend: `${completionRate}% completion rate`,
+      background: "bg-emerald-500/5",
     },
     {
       label: "In Progress",
@@ -30,6 +36,7 @@ export function SummaryCards({ total, completed, inProgress, overdue }: SummaryC
       icon: Clock,
       accent: "bg-blue-500/10 text-blue-600 dark:text-blue-400",
       trend: "Currently active",
+      background: "bg-blue-500/5",
     },
     {
       label: "Overdue",
@@ -37,15 +44,19 @@ export function SummaryCards({ total, completed, inProgress, overdue }: SummaryC
       icon: AlertTriangle,
       accent: "bg-red-500/10 text-red-600 dark:text-red-400",
       trend: "Needs attention",
+      background: "bg-red-500/5",
     },
   ];
 
   return (
     <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-      {cards.map(({ label, value, icon: Icon, accent, trend }) => (
+      {cards.map(({ label, value, icon: Icon, accent, background, trend }) => (
         <div
           key={label}
-          className="rounded-xl border bg-card p-5 shadow-sm transition hover:shadow-md hover:-translate-y-0.5"
+          className={cn(
+            "rounded-xl border p-5 shadow-sm transition hover:shadow-md hover:-translate-y-0.5",
+            background,
+          )}
         >
           <div className="flex items-start justify-between">
             <div>

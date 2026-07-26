@@ -19,18 +19,19 @@ import {
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { Check, ChevronDown, Trash2 } from "lucide-react";
-import type { Task, TaskStatus } from "./tasks-data";
+import { statusLabels, type Task, type TaskStatus } from "./tasks-data";
 
 const statusStyles: Record<TaskStatus, string> = {
-  "Completed": "bg-emerald-500/10 text-emerald-600 border-emerald-500/20 dark:text-emerald-400",
-  "In Progress": "bg-blue-500/10 text-blue-600 border-blue-500/20 dark:text-blue-400",
-  "Not Started": "bg-muted text-muted-foreground border-border",
-  "Overdue": "bg-red-500/10 text-red-600 border-red-500/20 dark:text-red-400",
+  DONE: "bg-emerald-500/10 text-emerald-600 border-emerald-500/20 dark:text-emerald-400",
+  IN_PROGRESS: "bg-blue-500/10 text-blue-600 border-blue-500/20 dark:text-blue-400",
+  TODO: "bg-muted text-muted-foreground border-border",
+  CANCELLED: "bg-red-500/10 text-red-600 border-red-500/20 dark:text-red-400",
 };
 
-const STATUS_OPTIONS: TaskStatus[] = ["Not Started", "In Progress", "Completed", "Overdue"];
+const STATUS_OPTIONS: TaskStatus[] = ["TODO", "IN_PROGRESS", "DONE", "CANCELLED"];
 
-function formatDate(iso: string) {
+function formatDate(iso: string | null) {
+  if (!iso) return "-";
   return new Date(iso).toLocaleDateString("en-US", {
     month: "short",
     day: "numeric",
@@ -38,20 +39,24 @@ function formatDate(iso: string) {
   });
 }
 
+function isOverdue(task: Task) {
+  if (!task.endAt) return false;
+  return new Date(task.endAt) < new Date() && task.status !== "DONE";
+}
+
 interface Props {
   tasks: Task[];
-  onStatusChange: (id: string, status: TaskStatus) => void;
+  onStatusChange: (id: number, status: TaskStatus) => void;
   onEdit: (task: Task) => void;
-  onDelete: (id: string) => void;
+  onDelete: (id: number) => void;
 }
 
 export function TaskTable({ tasks, onStatusChange, onEdit, onDelete }: Props) {
-  const [checked, setChecked] = useState<Record<string, boolean>>({});
+  const [checked, setChecked] = useState<Record<number, boolean>>({});
   const allChecked = tasks.length > 0 && tasks.every((t) => checked[t.id]);
-  
 
   const toggleAll = (value: boolean) => {
-    const next: Record<string, boolean> = {};
+    const next: Record<number, boolean> = {};
     if (value) tasks.forEach((t) => (next[t.id] = true));
     setChecked(next);
   };
@@ -62,7 +67,7 @@ export function TaskTable({ tasks, onStatusChange, onEdit, onDelete }: Props) {
   const bulkComplete = () => {
     selectedIds.forEach((id) => {
       const task = tasks.find((t) => t.id === id);
-      if (task && task.status !== "Completed") onStatusChange(id, "Completed");
+      if (task && task.status !== "DONE") onStatusChange(id, "DONE");
     });
     setChecked({});
   };
@@ -135,7 +140,7 @@ export function TaskTable({ tasks, onStatusChange, onEdit, onDelete }: Props) {
                     onCheckedChange={(v) =>
                       setChecked((prev) => ({ ...prev, [task.id]: Boolean(v) }))
                     }
-                    aria-label={`Select ${task.name}`}
+                    aria-label={`Select ${task.title}`}
                   />
                 </TableCell>
                 <TableCell
@@ -149,7 +154,7 @@ export function TaskTable({ tasks, onStatusChange, onEdit, onDelete }: Props) {
                     onClick={() => onEdit(task)}
                     className="text-left hover:text-primary hover:underline transition-colors"
                   >
-                    {task.name}
+                    {task.title}
                   </button>
                 </TableCell>
                 <TableCell>
@@ -158,10 +163,12 @@ export function TaskTable({ tasks, onStatusChange, onEdit, onDelete }: Props) {
                       <button
                         className={cn(
                           "inline-flex items-center gap-1 rounded-md border px-2.5 py-0.5 text-xs font-semibold transition hover:opacity-80",
-                          statusStyles[task.status],
+                          isOverdue(task)
+                            ? statusStyles.CANCELLED
+                            : statusStyles[task.status],
                         )}
                       >
-                        {task.status}
+                        {isOverdue(task) ? "Overdue" : statusLabels[task.status]}
                         <ChevronDown className="h-3 w-3" />
                       </button>
                     </DropdownMenuTrigger>
@@ -175,7 +182,7 @@ export function TaskTable({ tasks, onStatusChange, onEdit, onDelete }: Props) {
                             variant="outline"
                             className={cn("font-medium", statusStyles[s])}
                           >
-                            {s}
+                            {statusLabels[s]}
                           </Badge>
                         </DropdownMenuItem>
                       ))}
@@ -183,7 +190,7 @@ export function TaskTable({ tasks, onStatusChange, onEdit, onDelete }: Props) {
                   </DropdownMenu>
                 </TableCell>
                 <TableCell className="text-muted-foreground text-sm">
-                  {formatDate(task.dueDate)}
+                  {formatDate(task.endAt)}
                 </TableCell>
               </TableRow>
             ))}
