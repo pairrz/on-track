@@ -2,61 +2,59 @@ name: ${PROJECT_NAME}
 
 services:
   db:
-    image: postgres:16-alpine
+    image: postgres:18-alpine
     container_name: ${PROJECT_NAME}-db
     restart: always
-    ports:
-      - "${POSTGRES_PORT}:5432"
-
     volumes:
-      - pg-data:/var/lib/postgresql/data
+      - pf-data:/var/lib/postgresql
       - ./_entrypoint:/docker-entrypoint-initdb.d
-
     environment:
-      TZ: Asia/Bangkok
-      POSTGRES_USER: ${POSTGRES_USER}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
-      POSTGRES_DB: ${POSTGRES_DB}
-
+      - TZ=Asia/Bangkok
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_DB=${POSTGRES_DB}
+      - POSTGRES_APP_USER=${POSTGRES_APP_USER}
+      - POSTGRES_APP_PASSWORD=${POSTGRES_APP_PASSWORD}
+    networks:
+      - pf-net
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB} && PGPASSWORD=${POSTGRES_PASSWORD} psql -U ${POSTGRES_USER} -d ${POSTGRES_DB} -c 'SELECT 1;'"]
       interval: 5s
       timeout: 5s
       retries: 20
-
-    networks:
-      - app-net
 
   app:
     depends_on:
       db:
         condition: service_healthy
-
     build:
       context: .
       dockerfile: Dockerfile
       args:
-        DATABASE_URL: ${DATABASE_URL}
-
+        DATABASE_URL: postgresql://${POSTGRES_APP_USER}:${POSTGRES_APP_PASSWORD}@${PROJECT_NAME}-db:5432/${POSTGRES_DB}
     image: ${APP_IMAGE_NAME}
     container_name: ${PROJECT_NAME}-app
     restart: always
-
     ports:
       - "${APP_PORT}:3000"
-
+    networks:
+      - pf-net
     environment:
-      DATABASE_URL: postgresql://${POSTGRES_APP_USER}:${POSTGRES_APP_PASSWORD}@${PROJECT_NAME}-db:5432/${POSTGRES_DB}
-      NODE_ENV: production
-
+      - DATABASE_URL=postgresql://${POSTGRES_APP_USER}:${POSTGRES_APP_PASSWORD}@${PROJECT_NAME}-db:5432/${POSTGRES_DB}
+      - NODE_ENV=production
     volumes:
       - ./logs:/app/logs
-
-    networks:
-      - app-net
-
+    post_start:
+      - command:
+          [
+            "sh",
+            "-c",
+            'npm run db:migrate | awk ''{ print strftime("[%Y-%m-%d %H:%M:%S]"), $0; fflush(); }'' | tee -a /app/logs/migration.log',
+          ]
 volumes:
-  pg-data:
+  pf-data:
+    name: ${PROJECT_NAME}-pf-data
 
 networks:
-  app-net:
+  pf-net:
+    name: ${PROJECT_NAME}-pf-net

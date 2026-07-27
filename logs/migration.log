@@ -1,0 +1,7 @@
+[2026-07-27 14:19:06] 
+[2026-07-27 14:19:06] > on-track@0.1.0 db:migrate
+[2026-07-27 14:19:06] > prisma migrate dev
+[2026-07-27 14:19:06] 
+[2026-07-27 14:19:22] Prisma schema loaded from prisma/schema.prisma
+[2026-07-27 14:19:22] Datasource "db": PostgreSQL database "on-track-db", schema "public" at "on-track-db:5432"
+[2026-07-27 14:19:22] 
