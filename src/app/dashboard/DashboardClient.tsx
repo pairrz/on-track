@@ -29,9 +29,7 @@ export function DashboardClient() {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editing, setEditing] = useState<Task | null>(null);
 
-  /*
-   * Load tasks from API
-   */
+  
   useEffect(() => {
     async function loadTasks() {
       try {
@@ -63,9 +61,7 @@ export function DashboardClient() {
     void loadTasks();
   }, []);
 
-  /*
-   * Search / filter tasks
-   */
+  
   const filtered = useMemo(() => {
     const normalizedQuery = query.trim().toLowerCase();
 

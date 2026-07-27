@@ -69,10 +69,6 @@ export default function LoginPage() {
 
   return (
     <main className="min-h-screen bg-[#F6EFE6] lg:flex">
-      {/* =====================================================
-          LEFT
-          ใช้รูป public/login-pic.png
-      ===================================================== */}
 
       <section className="relative hidden min-h-screen overflow-hidden lg:block lg:w-1/2 xl:w-[52%]">
         <Image
