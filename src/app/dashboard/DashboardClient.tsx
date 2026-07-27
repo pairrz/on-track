@@ -17,11 +17,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 
-import {
-  Plus,
-  Search,
-  LogOut,
-} from "lucide-react";
+import { Plus, Search, LogOut } from "lucide-react";
 
 export function DashboardClient() {
   const [tasks, setTasks] = useState<Task[]>([]);
@@ -96,7 +92,6 @@ export function DashboardClient() {
   ) => {
     const previousTasks = tasks;
 
-    // Optimistic UI update
     setTasks((current) =>
       current.map((task) =>
         task.id === id
@@ -126,7 +121,6 @@ export function DashboardClient() {
 
       const updatedTask = (await response.json()) as Task;
 
-      // Use server response as source of truth
       setTasks((current) =>
         current.map((task) =>
           task.id === updatedTask.id
@@ -136,8 +130,6 @@ export function DashboardClient() {
       );
     } catch (err) {
       console.error(err);
-
-      // Rollback if API fails
       setTasks(previousTasks);
     }
   };
@@ -165,9 +157,6 @@ export function DashboardClient() {
 
   /*
    * Delete task
-   *
-   * Delete from Database first,
-   * then remove from local state.
    */
   const handleDelete = async (id: number) => {
     try {
@@ -191,7 +180,6 @@ export function DashboardClient() {
         );
       }
 
-      // Remove from UI only after Database deletion succeeds
       setTasks((current) =>
         current.filter((task) => task.id !== id),
       );
@@ -227,8 +215,12 @@ export function DashboardClient() {
    */
   if (loading) {
     return (
-      <div className="p-8">
-        Loading...
+      <div className="flex min-h-screen items-center justify-center bg-[#F3E7DE]">
+        <div className="rounded-2xl bg-white/90 px-8 py-6 shadow-lg">
+          <p className="text-sm font-medium text-[#4A7FA3]">
+            Loading On-Track...
+          </p>
+        </div>
       </div>
     );
   }
@@ -238,35 +230,53 @@ export function DashboardClient() {
    */
   if (error) {
     return (
-      <div className="p-8 text-red-500">
-        {error}
+      <div className="flex min-h-screen items-center justify-center bg-[#F3E7DE] p-6">
+        <div className="rounded-2xl border border-red-200 bg-white/90 px-8 py-6 shadow-lg">
+          <p className="font-medium text-red-600">
+            {error}
+          </p>
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-muted/30">
+    <div className="min-h-screen bg-[#F3E7DE]">
       {/* Header */}
-      <header className="border-b bg-background">
+      <header className="border-b border-[#4A7FA3]/10 bg-white/80 shadow-sm backdrop-blur">
         <div className="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-4 px-6 py-6">
+          
+          {/* Brand */}
           <div>
-            <h1 className="text-2xl font-bold tracking-tight">
-              On-Track
-            </h1>
+            <div className="flex items-center gap-3">
+              <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-[#4A7FA3] shadow-sm">
+                <span className="text-lg font-black text-white">
+                  O
+                </span>
+              </div>
 
-            <p className="mt-1 text-sm text-muted-foreground">
-              Track your tasks, status, and schedule in one place.
-            </p>
+              <div>
+                <h1 className="text-2xl font-black tracking-tight text-[#4A7FA3]">
+                  On-Track
+                </h1>
+
+                <p className="mt-0.5 text-sm text-gray-500">
+                  Track your tasks, status, and schedule in one place.
+                </p>
+              </div>
+            </div>
           </div>
 
-          <div className="flex items-center gap-2">
+          {/* Actions */}
+          <div className="flex flex-wrap items-center gap-2">
+            
             {/* Search */}
             <div className="relative">
-              <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+              <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[#4A7FA3]/60" />
 
               <Input
                 placeholder="Search tasks..."
-                className="w-64 pl-9"
+                className="w-64 border-[#4A7FA3]/20 bg-white pl-9 shadow-sm transition focus-visible:border-[#4A7FA3] focus-visible:ring-[#4A7FA3]/20"
                 value={query}
                 onChange={(event) =>
                   setQuery(event.target.value)
@@ -275,7 +285,10 @@ export function DashboardClient() {
             </div>
 
             {/* New task */}
-            <Button onClick={openNew}>
+            <Button
+              onClick={openNew}
+              className="bg-[#4A7FA3] font-semibold text-white shadow-sm transition-all hover:bg-[#3D6D8D] hover:shadow-md"
+            >
               <Plus className="mr-1 h-4 w-4" />
               New Task
             </Button>
@@ -288,6 +301,7 @@ export function DashboardClient() {
                   callbackUrl: "/login",
                 })
               }
+              className="border-[#4A7FA3]/20 bg-white font-semibold text-[#4A7FA3] transition-all hover:bg-[#4A7FA3]/5"
             >
               <LogOut className="mr-1 h-4 w-4" />
               Logout
@@ -298,6 +312,33 @@ export function DashboardClient() {
 
       {/* Main */}
       <main className="mx-auto max-w-7xl space-y-8 px-6 py-8">
+        
+        {/* Page intro */}
+        <div className="rounded-2xl border border-white/70 bg-white/65 p-6 shadow-sm backdrop-blur-sm">
+          <div className="flex flex-wrap items-end justify-between gap-4">
+            
+            <div>
+              <p className="mb-1 text-sm font-semibold uppercase tracking-wider text-[#F5A06A]">
+                Dashboard
+              </p>
+
+              <h2 className="text-3xl font-black tracking-tight text-[#4A7FA3]">
+                Your Work Overview
+              </h2>
+
+              <p className="mt-1 text-sm text-gray-600">
+                Stay on top of your tasks and deadlines.
+              </p>
+            </div>
+
+            <div className="rounded-xl bg-[#A8BDAE]/60 px-4 py-2 text-sm font-semibold text-[#385346]">
+              {tasks.length}{" "}
+              {tasks.length === 1 ? "Task" : "Tasks"}
+            </div>
+
+          </div>
+        </div>
+
         {/* Summary */}
         <SummaryCards
           total={summary.total}

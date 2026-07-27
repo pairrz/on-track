@@ -1,6 +1,7 @@
 "use client";
 
 import { Badge } from "@/components/ui/badge";
+
 import {
   Table,
   TableBody,
@@ -9,15 +10,21 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import { ChevronDown, Trash2 } from "lucide-react";
+
+import {
+  ChevronDown,
+  Trash2,
+} from "lucide-react";
 
 import {
   statusLabels,
@@ -27,16 +34,16 @@ import {
 
 const statusStyles: Record<TaskStatus, string> = {
   DONE:
-    "bg-emerald-500/10 text-emerald-600 border-emerald-500/20 dark:text-emerald-400",
+    "bg-[#7F9C87] text-white border-[#7F9C87] shadow-sm",
 
   IN_PROGRESS:
-    "bg-blue-500/10 text-blue-600 border-blue-500/20 dark:text-blue-400",
+    "bg-[#065799] text-white border-[#065799] shadow-sm",
 
   TODO:
-    "bg-muted text-muted-foreground border-border",
+    "bg-[#D3B7A6] text-[#4a3428] border-[#D3B7A6] shadow-sm",
 
   CANCELLED:
-    "bg-red-500/10 text-red-600 border-red-500/20 dark:text-red-400",
+    "bg-[#F87828] text-white border-[#F87828] shadow-sm",
 };
 
 const STATUS_OPTIONS: TaskStatus[] = [
@@ -49,10 +56,6 @@ const STATUS_OPTIONS: TaskStatus[] = [
 function formatDate(iso: string | null) {
   if (!iso) return "-";
 
-  /*
-   * Read YYYY-MM-DD directly.
-   * Prevent timezone from changing the displayed date.
-   */
   const datePart = iso.slice(0, 10);
 
   const [year, month, day] = datePart
@@ -96,61 +99,64 @@ export function TaskTable({
   onDelete,
 }: Props) {
   return (
-    <div className="rounded-xl border bg-card shadow-sm">
-
+    <div className="overflow-hidden rounded-2xl border border-[#065799]/10 bg-white shadow-lg shadow-[#065799]/5">
       {/* Header */}
-      <div className="flex items-center justify-between gap-3 px-6 py-4 border-b flex-wrap">
+      <div className="flex flex-wrap items-center justify-between gap-3 border-b border-[#065799]/10 bg-gradient-to-r from-[#065799]/5 via-white to-[#F87828]/5 px-6 py-5">
         <div>
-          <h2 className="text-lg font-semibold">
-            Tasks
-          </h2>
+          <div className="flex items-center gap-2">
+            <div className="h-2.5 w-2.5 rounded-full bg-[#F87828] shadow-sm shadow-[#F87828]" />
 
-          <p className="text-sm text-muted-foreground">
+            <h2 className="text-lg font-black text-[#065799]">
+              Tasks
+            </h2>
+          </div>
+
+          <p className="mt-1 text-sm text-slate-500">
             Manage and track all your active tasks
           </p>
+        </div>
+
+        <div className="rounded-full bg-[#065799]/10 px-3 py-1 text-xs font-bold text-[#065799]">
+          {tasks.length}{" "}
+          {tasks.length === 1 ? "task" : "tasks"}
         </div>
       </div>
 
       {/* Table */}
       <div className="overflow-x-auto">
         <Table>
-
           <TableHeader>
-            <TableRow className="bg-muted/40 hover:bg-muted/40">
-
-              <TableHead className="min-w-[240px]">
+            <TableRow className="border-b border-[#065799]/10 bg-[#065799]/5 hover:bg-[#065799]/5">
+              <TableHead className="min-w-[240px] font-bold text-[#065799]">
                 Task Name
               </TableHead>
 
-              <TableHead>
+              <TableHead className="font-bold text-[#065799]">
                 Status
               </TableHead>
 
-              <TableHead>
+              <TableHead className="font-bold text-[#065799]">
                 Due Date
               </TableHead>
 
-              <TableHead className="w-12 text-right">
+              <TableHead className="w-12 text-right font-bold text-[#065799]">
                 Delete
               </TableHead>
-
             </TableRow>
           </TableHeader>
 
           <TableBody>
-
             {tasks.map((task) => (
               <TableRow
                 key={task.id}
-                className="hover:bg-muted/30 transition-colors"
+                className="border-b border-slate-100 transition-all hover:bg-[#F87828]/5"
               >
-
                 {/* Task name */}
-                <TableCell className="font-medium">
+                <TableCell className="font-semibold">
                   <button
                     type="button"
                     onClick={() => onEdit(task)}
-                    className="text-left hover:text-primary hover:underline transition-colors"
+                    className="text-left text-slate-800 transition-colors hover:text-[#F87828] hover:underline"
                   >
                     {task.title}
                   </button>
@@ -159,12 +165,11 @@ export function TaskTable({
                 {/* Status */}
                 <TableCell>
                   <DropdownMenu>
-
                     <DropdownMenuTrigger asChild>
                       <button
                         type="button"
                         className={cn(
-                          "inline-flex items-center gap-1 rounded-md border px-2.5 py-0.5 text-xs font-semibold transition hover:opacity-80",
+                          "inline-flex items-center gap-1 rounded-full border px-3 py-1 text-xs font-bold shadow-sm transition hover:scale-105",
                           statusStyles[task.status],
                         )}
                       >
@@ -174,8 +179,10 @@ export function TaskTable({
                       </button>
                     </DropdownMenuTrigger>
 
-                    <DropdownMenuContent align="start">
-
+                    <DropdownMenuContent
+                      align="start"
+                      className="border-[#065799]/10 shadow-xl"
+                    >
                       {STATUS_OPTIONS.map((status) => (
                         <DropdownMenuItem
                           key={status}
@@ -197,14 +204,12 @@ export function TaskTable({
                           </Badge>
                         </DropdownMenuItem>
                       ))}
-
                     </DropdownMenuContent>
-
                   </DropdownMenu>
                 </TableCell>
 
                 {/* Due date */}
-                <TableCell className="text-muted-foreground text-sm">
+                <TableCell className="text-sm font-medium text-slate-500">
                   {formatDate(task.endAt)}
                 </TableCell>
 
@@ -213,7 +218,7 @@ export function TaskTable({
                   <Button
                     variant="ghost"
                     size="icon"
-                    className="h-8 w-8 text-muted-foreground hover:text-red-600 hover:bg-red-500/10"
+                    className="h-8 w-8 text-slate-400 transition-all hover:scale-110 hover:bg-red-500/10 hover:text-red-600"
                     onClick={() =>
                       onDelete(task.id)
                     }
@@ -222,7 +227,6 @@ export function TaskTable({
                     <Trash2 className="h-4 w-4" />
                   </Button>
                 </TableCell>
-
               </TableRow>
             ))}
 
@@ -231,15 +235,13 @@ export function TaskTable({
               <TableRow>
                 <TableCell
                   colSpan={4}
-                  className="text-center text-sm text-muted-foreground py-10"
+                  className="py-14 text-center text-sm text-slate-400"
                 >
                   No tasks match your search.
                 </TableCell>
               </TableRow>
             )}
-
           </TableBody>
-
         </Table>
       </div>
     </div>
