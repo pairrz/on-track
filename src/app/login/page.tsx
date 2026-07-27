@@ -83,14 +83,6 @@ export default function LoginPage() {
         {/* subtle overlay */}
         <div className="absolute inset-0 bg-black/5" />
 
-        {/* Brand */}
-        <div className="absolute left-8 top-8 z-10 flex items-center gap-3">
-          <OnTrackMark size={38} />
-
-          <span className="text-2xl font-bold tracking-tight text-white drop-shadow-md">
-            OnTrack
-          </span>
-        </div>
       </section>
 
       {/* =====================================================
