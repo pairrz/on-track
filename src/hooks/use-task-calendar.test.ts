@@ -43,12 +43,6 @@ function makeTask(
   };
 }
 
-/*
- * Week:
- *
- * Sun       Mon       Tue       Wed       Thu       Fri       Sat
- * Jul 26    Jul 27    Jul 28    Jul 29    Jul 30    Jul 31    Aug 1
- */
 const week = [
   new Date(2026, 6, 26),
   new Date(2026, 6, 27),
